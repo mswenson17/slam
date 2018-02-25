@@ -1,0 +1,3 @@
+[submodule "groupslam"]
+	path = groupslam
+	url = https://github.com/mswenson17/groupslam
