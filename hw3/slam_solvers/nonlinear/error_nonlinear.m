@@ -16,8 +16,8 @@
 %                 obs(:,1) - idx of pose at which measurement was 
 %                   made
 %                 obs(:,2) - idx of landmark being observed
-%                 obs(:,3) - x-value of landmark measurement
-%                 obs(:,4) - y-value of landmark measurement
+%                 obs(:,3) - theta of landmark measurement
+%                 obs(:,4) - d of landmark measurement
 %     sigma_o - Covariance matrix corresponding to the odometry
 %               measurements
 %     sigma_l - Covariance matrix corresponding to the landmark
@@ -26,8 +26,8 @@
 %     err     - total error of all measurements
 %
 function err = error_nonlinear(x, odom, obs, sigma_odom, sigma_landmark)
-%% Extract useful constants which you may wish to use
-n_poses = size(odom, 1) + 1;                % +1 for prior on the first pose
+% Extract useful constants 
+n_poses = size(odom, 1) + 1;               % +1 for prior on the first pose
 n_landmarks = max(obs(:,2));
 
 n_odom = size(odom, 1);
@@ -43,9 +43,51 @@ m_dim = size(obs(1, 3:end), 2);    % landmark measurement dimension
 N = p_dim*n_poses + l_dim*n_landmarks;
 M = o_dim*(n_odom+1) + m_dim*n_obs;         % +1 for prior on the first pose
 
-%% Initialize error
+% Initialize error
 err = 0;
+hx = zeros(2*(n_poses+n_obs),1);
+%size(hx)
+sigma_o = sqrt(sigma_odom(1));
+sigma_l = sqrt(sigma_landmark(1));
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%% Your code goes here %%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%calculate h*x-z
+%hx is the current state vector run through the actual odom finding equations
+for i = 1:n_poses-1
+    rx1 = x(2*i-1);
+    ry1 = x(2*i);
+    rx2 = x(2*i+1);
+    ry2 = x(2*i+2);
+    hx(2+2*i-1:2+2*i) = meas_odom(rx1, ry1, rx2, ry2)/sigma_o;
+end
+
+l_offset = p_dim*(n_poses);
+
+for i = 1:n_obs
+    %lookup r and L x and y coords based on observation data
+    x_idx = obs(i,1)*2-1;
+    l_idx = obs(i,2)*2+l_offset-1;
+    
+    rx = x(x_idx);
+    ry = x(x_idx+1);
+    lx = x(l_idx);
+    ly = x(l_idx+1);
+    
+    %h = meas_landmark(rx1, ry1, rx2, ry2);
+    m = meas_landmark(rx, ry, lx, ly);
+    m(1) = wrapToPi(m(1));
+    hx(l_offset+2*i-1:l_offset+2*i) = m/sigma_l;
+end
+
+%z = b from create_Ab
+z = cat(1, [0;0],reshape(odom', [],1))/sigma_o;
+z = cat(1, z, reshape(obs(:,3:4)',[],1))/sigma_l;
+
+for i = 1:2:o_dim*n_obs
+   z(l_offset+i) = z(l_offset+i);
+end
+%z
+%zsize=size(z)
+%hxsize=size(hx)
+
+
+err = sum((hx-z).^2);

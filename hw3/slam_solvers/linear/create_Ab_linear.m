@@ -47,13 +47,33 @@ M = o_dim*(n_odom+1) + m_dim*n_obs;     % +1 for prior on the first pose
 % Initialize matrices
 A = zeros(M, N);
 b = zeros(M, 1);
+sigma_o = sqrt(sigma_o);
+sigma_l = sqrt(sigma_l);
 
 % Add odometry and landmark measurements to A, b - including prior on first
 % pose
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%% Your code goes here %%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%upper left quadrant - pose/odom
+pose_block = eye(p_dim)/sigma_o;
+A(1:2,1:2) = eye(2);
+for i = 3:2:p_dim*n_poses
+    A(i:i+1,i:i+1) = pose_block;
+    A(i:i+1,i-2:i-1) = -1*pose_block;
+end
 
-%% Make A a sparse matrix 
+%lower left quadrant - pose/landmark measurement
+r_offset = o_dim*(n_odom+1);
+c_offset = p_dim*(n_poses);
+land_block = eye(l_dim)/sigma_l
+for i = 1:n_obs
+    l = obs(i,:);
+    A(r_offset+2*i-1:r_offset+2*i, l(1)*2-1:l(1)*2) = -land_block;
+    A(r_offset+2*i-1:r_offset+2*i, c_offset+l(2)*2-1:c_offset+l(2)*2) = land_block;
+end
+
+b = cat(1, [0;0],reshape(odom', [],1))/sigma_o(1,1);
+b = cat(1, b, reshape(obs(:,3:4)',[],1)/sigma_l(1,1));
+
+
+% Make A a sparse matrix 
 As = sparse(A);

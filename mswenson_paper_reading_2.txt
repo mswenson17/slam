@@ -1,0 +1,18 @@
+ORB-SLAM: A Versatile and Accurate Monocular SLAM System 
+ORB-SLAM is a feature-based monocular SLAM algorithm that runs in real time indoor or outdoors. Some of its main
+differentiating features are that is uses ORB (Oriented FAST  and rotated BRIEF) feature detection, and that it
+uses the same features for mapping, tracking, place recognition and loop closure. 
+The system uses independent tracking, local mapping, and loop closure threads for faster computation. Features
+gathered from relevant keyframes are aggressively culled, keeping only high quality features. A bag of words 
+approach is used for place recognition. In general ORB-SLAM seems to combine most groundbreaking SLAM methods
+from the pre-2015 period. 
+
+
+LSD-SLAM: Large-Scale Direct Monocular SLAM
+This paper proposes a featureless, monocular SLAM algorithm that builds large, consistent maps. 
+It includes more information than feature-based SLAM algorithms by performing direct image frame alignment, 
+using an estimation of the camera pose from the last tracked frame. This is done based using an error function that
+incorporates photometric error and residual variance, allowing for direct depth estimation. Frames sufficiently distant from previous
+keyframes are made into new keyframes, intermediary frames are used to refine the depth map estimation. Map optimization
+occurs in the background using pose-graph optimization.
+

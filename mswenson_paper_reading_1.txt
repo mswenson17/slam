@@ -1,0 +1,16 @@
+Parallel Tracking and Mapping for Small AR Workspaces
+
+This paper discusses a method for estimating camera pose in an unknown scene. The primary innovation of its algorithm
+is parallelizing the tracking and mapping subproblems, which allows use of more computationally expensive algorithms
+for feature recognition and camera localization than traditionally allowed. This avoids common pitfalls in using 
+SLAM techinques to localize a camera, as errors between odometry and measurement tend to compound. Each feature 
+detected is permanently related to the image in which it was first found, and each new image is localized with 
+the coarsest available features. 
+
+
+KinectFusion: Real-Time Dense Surface Mapping and Tracking
+
+As compared to PTAM, this paper focuses on the dense reconstruction of scenes using the Kinect sensor.
+It leverages the availablity of cheap and useful depth cameras to add additional information to the model and map.
+The addition of a direct depth sensor allows direct comparison of the surface/map of a scene to the model built
+by the algorithm, signiicantly speeing up realtime camera pose estimation and scene construction. 
