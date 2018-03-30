@@ -57,7 +57,7 @@ for i = 1:n_poses-1
     ry1 = x(2*i);
     rx2 = x(2*i+1);
     ry2 = x(2*i+2);
-    hx(2+2*i-1:2+2*i) = meas_odom(rx1, ry1, rx2, ry2)/sigma_o;
+    hx(2+2*i-1:2+2*i) = meas_odom(rx1, ry1, rx2, ry2);
 end
 
 l_offset = p_dim*(n_poses);
@@ -74,20 +74,20 @@ for i = 1:n_obs
     
     %h = meas_landmark(rx1, ry1, rx2, ry2);
     m = meas_landmark(rx, ry, lx, ly);
-    m(1) = wrapToPi(m(1));
-    hx(l_offset+2*i-1:l_offset+2*i) = m/sigma_l;
+    hx(l_offset+2*i-1:l_offset+2*i) = m;
 end
 
 %z = b from create_Ab
-z = cat(1, [0;0],reshape(odom', [],1))/sigma_o;
-z = cat(1, z, reshape(obs(:,3:4)',[],1))/sigma_l;
+z = cat(1, [0;0],reshape(odom', [],1));
+z = cat(1, z, reshape(obs(:,3:4)',[],1));
 
-for i = 1:2:o_dim*n_obs
-   z(l_offset+i) = z(l_offset+i);
+err = hx-z;
+
+for i = 1:n_obs
+    err(l_offset+2*i-1) = wrapToPi(err(l_offset+2*i-1));
 end
-%z
-%zsize=size(z)
-%hxsize=size(hx)
 
+err(1:l_offset) = err(1:l_offset).*sigma_o;
+err(l_offset+1:end) = err(l_offset+1:end).*sigma_l;
 
-err = sum((hx-z).^2);
+err = sum(err.^2);

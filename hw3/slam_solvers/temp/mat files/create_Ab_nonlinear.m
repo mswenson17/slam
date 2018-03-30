@@ -83,7 +83,8 @@ for i = 1:n_obs
     J2 = J(:,3:4); 
     
     m = meas_landmark(rx, ry, lx, ly);
-    hx(r_offset+2*i-1:r_offset+2*i) = m;
+    m(1) = wrapToPi(m(1));
+    hx(r_offset+2*i-1:r_offset+2*i) = m/sigma_l(1,1);
 
     l = obs(i,:);
     A(r_offset+2*i-1:r_offset+2*i, l(1)*2-1:l(1)*2) = J1;
@@ -91,20 +92,9 @@ for i = 1:n_obs
 end
 
 z = cat(1, [0;0],reshape(odom', [],1))/sigma_o(1,1);
-z = cat(1, z, reshape(obs(:,3:4)',[],1));
+z = cat(1, z, reshape(obs(:,3:4)',[],1)/sigma_l(1,1));
 
 b = z - hx;
 
-for i = 1:2:2*n_obs
-    b(r_offset+i)= wrapToPi(b(r_offset+i))/sigma_l(1);
-end
-
-
-if(size(b, 1)==614)
-    asdfasddfa =1;
-end
-    
-
-%fprintf('%d\n', size(b, 1))
 % Make A a sparse matrix 
 As = sparse(A);

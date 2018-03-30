@@ -1,7 +1,7 @@
 function evaluate_method(name, est_traj, est_landmarks, odom, gt_traj, gt_landmarks, show_plot)
 
 
-if (norm(rms(est_traj-gt_traj))) > 0.1
+if (norm(rms(est_traj-gt_traj))) > 0.05
     fprintf('%s solution is too far off!\n', name);
 else
     fprintf('%s solution is correct!\n', name);
